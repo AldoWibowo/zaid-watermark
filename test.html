@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watermark Uploader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h2 {
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="file"],
+        input[type="text"],
+        button {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        img {
+            margin-top: 20px;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Watermark Arfica</h2>
+        <input type="file" id="photo" accept="image/*" required>
+        <input type="text" id="watermark" placeholder="Enter watermark text" required>
+        <button id="addWatermark">Upload and Add Watermark</button>
+
+        <h2>Watermarked Result:</h2>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <img id="result" alt="Watermarked Image">
+
+        <button id="download" style="display:none;">Download Image</button>
+    </div>
+
+    <script>
+        const logo = new Image();
+        logo.src = 'logo.png'; // Path ke logo Anda
+        logo.crossOrigin = "anonymous"; // Mengatur crossOrigin
+
+        logo.onload = function() {
+            console.log('Logo berhasil dimuat.');
+        };
+
+        logo.onerror = function() {
+            console.error('Gagal memuat logo. Pastikan path ke logo benar dan logo tersedia.');
+        };
+
+        document.getElementById('addWatermark').onclick = function() {
+            const fileInput = document.getElementById('photo');
+            const watermarkText = document.getElementById('watermark').value;
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.crossOrigin = "anonymous"; // Mengatur crossOrigin
+
+            img.onload = function() {
+                console.log('Gambar yang diunggah berhasil dimuat.');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+
+                // Menambahkan watermark teks
+                ctx.font = '72px Arial';
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+                ctx.textAlign = 'center';
+                ctx.fillText(watermarkText, img.width / 2, img.height / 2);
+
+                // Menambahkan logo dengan ukuran lebih kecil (50x50)
+                if (logo.complete && logo.naturalHeight !== 0) {
+                    const logoSize = 50; // Ukuran logo
+                    console.log('Menambahkan logo pada posisi (10, 10) dengan ukuran:', logoSize);
+                    ctx.drawImage(logo, 10, 10, logoSize, logoSize); // Posisi logo
+                } else {
+                    console.error('Logo tidak tersedia atau gagal dimuat.');
+                }
+
+                const dataURL = canvas.toDataURL('image/png');
+                document.getElementById('result').src = dataURL;
+                document.getElementById('download').style.display = 'block';
+                document.getElementById('download').onclick = function() {
+                    const link = document.createElement('a');
+                    link.href = dataURL;
+                    link.download = 'watermarked_image.png';
+                    link.click();
+                };
+            };
+
+            img.onerror = function() {
+                console.error('Gagal memuat gambar yang diunggah.');
+            };
+
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    console.log('Gambar berhasil dibaca dari input file.');
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                console.error('Tidak ada file yang diunggah.');
+            }
+        };
+    </script>
+</body>
+</html>
